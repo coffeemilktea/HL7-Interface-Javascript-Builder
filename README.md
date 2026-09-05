@@ -1,9 +1,9 @@
-# Mirth Transformer Builder
+# HL7 Interface Javascript Builder
 
 A single-file, zero-dependency web app that **generates Mirth Connect transformers from HL7 v2.5.1 messages**.
 Drag a field onto another field and it writes the JavaScript for you.
 
-**Live:** https://coffeemilktea.github.io/Mirth-Transformer-Builder/
+**Live:** https://coffeemilktea.github.io/HL7-Interface-Javascript-Builder/
 
 No build step, no server, no npm. One HTML file — open it locally or host it anywhere.
 
