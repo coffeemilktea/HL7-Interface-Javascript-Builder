@@ -29,10 +29,33 @@ Paste an HL7 message, map fields visually, and copy out a working transformer.
 | Drag field → the drop zone | Starts a new mapping, then click the target |
 | Click a field, then click another | Same thing without dragging |
 | Drag the ⠿ grip | Reorders mappings |
+| Drag a transform pill onto another | Reorders the transform chain |
+| Double-click a value in the tree | Edits the sample message in place |
+| Hover a mapping (or a field) | Highlights the other side of the link |
+
+Every field in the tree carries a badge showing how many mappings **read** it (taro) and how many
+**write** it (thai tea), so you can see at a glance what a message is already wired into.
 
 Sources can be a **field**, **literal text**, a **template** (`${PID-5.2} ${PID-5.1}`), a **channelMap
 variable**, the **current timestamp**, or a **new UUID**. Targets can be a field, a channelMap or
 connectorMap variable, or "clear field".
+
+## Seeing what a mapping actually does
+
+Each card shows the real values from the loaded sample, live, as a strip under the slots:
+
+```
+DOE  →  Doe  →  Doe, J   →  Doe, J        ← final value written
+     Title Case  Suffix     ( JANE )      ← struck through: the value being replaced
+```
+
+One chip per transform, so a chain that ends up wrong shows you exactly which step broke it. When a
+mapping does not run, the strip says why — `disabled`, `condition not met` (with the value the
+condition actually read), `not yet applied`, or the error.
+
+The **Preview** tab has a scrubber that applies the first *N* mappings so you can walk the message
+forward one step at a time, watching the output change and the pending cards dim. `←` / `→` step it
+from the keyboard. Copy respects the step, so you can lift the message as of any point in the chain.
 
 ## Transforms
 
@@ -89,6 +112,30 @@ if (new RegExp('^(H|HH|L|LL|A|AA)$').test(_v(msg['OBX'][2]['OBX.8']))) {
 Paste it into a JavaScript transformer step, or use the **Channel XML** tab to import a whole
 `<transformer>` element.
 
+## Keyboard
+
+| Key | Action |
+|---|---|
+| `/` | Focus the field filter |
+| `n` | New mapping |
+| `r` | Recipe library |
+| `1` `2` `3` | JavaScript / Channel XML / Preview tab |
+| `←` `→` | Step through mappings (Preview tab) |
+| `⌘Z` / `⇧⌘Z` | Undo / redo |
+| `Esc` | Cancel a pick, close a dialog |
+| `?` | Shortcut list |
+
+Undo covers everything that changes state — mappings, transforms, conditions, reordering, recipe
+adds, imports, and edits to the sample message. Typing is coalesced, so one undo takes back a whole
+edit rather than one character.
+
+## Saving and sharing
+
+The `⋯` menu holds **Save** / **Load** (browser `localStorage`) and **Export** / **Import** as a
+`.json` file — the export carries the mappings and the sample message together, so a mapping set can
+be handed to someone else or checked into a repo. Imported mappings are appended and re-keyed, never
+overwriting what is already on screen.
+
 ## Path syntax
 
 ```
@@ -112,6 +159,9 @@ Or paste your own — click **✎ Edit** to open the raw message box.
 - The Channel XML tab targets Mirth **4.5.0**; edit the two `version` attributes for older servers.
 - The preview runs a JavaScript reimplementation of the transforms, so it is a faithful check of your
   mapping logic — but the authority is always Mirth itself. Test in a channel before you rely on it.
+- Mappings are applied in order against a message that earlier mappings have already changed, which is
+  what the generated code does to `msg`. So a mapping that reads a field an earlier one wrote sees the
+  new value, in the preview and in Mirth alike.
 - Mappings save to `localStorage` via the **Save** / **Load** buttons; nothing leaves the browser.
 
 ## Running locally
