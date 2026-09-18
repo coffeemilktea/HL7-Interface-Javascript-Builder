@@ -3,205 +3,509 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HL7 Interface Javascript Builder</title>
+<title>Mirth Transformer Builder — HL7 v2.5.1 interface JavaScript</title>
+<meta name="description" content="Map HL7 v2.5.1 fields by dragging one onto another and get a working Mirth Connect transformer back: the JavaScript, a pasteable channel XML block, and a live preview of the transformed message. Runs entirely in your browser.">
+<link rel="canonical" href="https://coffeemilktea.github.io/HL7-Interface-Javascript-Builder/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23161110%22/%3E%20%3Crect%20x%3D%221.5%22%20y%3D%221.5%22%20width%3D%2261%22%20height%3D%2261%22%20rx%3D%2212.5%22%20fill%3D%22none%22%20stroke%3D%22%23443831%22%20stroke-width%3D%223%22/%3E%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23c9a0ea%22%20stroke-width%3D%224.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%20%3Cpath%20d%3D%22M17%2021h30l-3.3%2031.5a4%204%200%200%201-4%203.5H24.3a4%204%200%200%201-4-3.5z%22/%3E%20%3Cpath%20d%3D%22M13%2021h38%22/%3E%20%3Cpath%20d%3D%22M36%2021V9l7.5-3%22/%3E%20%3C/g%3E%20%3Cg%20fill%3D%22%23f0cf8a%22%3E%20%3Ccircle%20cx%3D%2227%22%20cy%3D%2244%22%20r%3D%223.2%22/%3E%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2244%22%20r%3D%223.2%22/%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%2250.5%22%20r%3D%223.2%22/%3E%20%3C/g%3E%20%3C/svg%3E">
+<meta name="theme-color" content="#1e1815" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f3e7d6" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://coffeemilktea.github.io/HL7-Interface-Javascript-Builder/">
+<meta property="og:site_name" content="Healthcare Data Tools">
+<meta property="og:title" content="Mirth Transformer Builder — HL7 v2.5.1 interface JavaScript">
+<meta property="og:description" content="Map HL7 v2.5.1 fields by dragging one onto another and get a working Mirth Connect transformer back: the JavaScript, a pasteable channel XML block, and a live preview of the transformed message. Runs entirely in your browser.">
+<meta name="twitter:card" content="summary">
+<!-- Palette inlined from coffeemilktea.github.io/assets/tokens.css so this
+     file stays single-file and zero-dependency, as the README promises.
+     Re-inline from there if the site palette changes. -->
 <style>
-:root{
-  --bg:#282a36; --bg2:#21222c; --bg3:#1e1f29; --bg4:#343746; --line:#44475a;
-  --fg:#f8f8f2; --dim:#6272a4; --cyan:#8be9fd; --green:#50fa7b;
-  --orange:#ffb86c; --pink:#ff79c6; --purple:#bd93f9; --red:#ff5555; --yellow:#f1fa8c;
-  --r:7px;
+/* ═══════════════════════════════════════════════════════════════════════
+   Boba design tokens — the single source of truth for the whole site.
+   珍珠奶茶: dark is "brown sugar boba", the drink seen through a dark cup;
+   light is "milk tea". The accents are the flavour wall of a boba shop.
+
+   Every page links this file and then aliases its own local variable
+   names onto these tokens, so a page keeps its layout CSS but can never
+   drift off the palette. Change a value here and the site follows.
+
+   Contrast: every foreground clears WCAG AA (4.5:1) against all four
+   surfaces -- --bg, --surface, --surface2 and --sink -- and both glass
+   fills, in both modes. --surface2 is the tightest of them, so check
+   there first: a colour can pass on the page background and still fail
+   on a chip or a table head.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Surfaces ── */
+  --bg:          #1e1815;  /* steeped pearl   */
+  --surface:     #161110;  /* dark cup        */
+  --surface2:    #2e2521;  /* wet tapioca     */
+  --sink:        #120e0d;  /* below the cup — insets, code wells */
+  --border:      #443831;  /* cane sugar      */
+  --border-soft: #2b231f;  /* cane sugar, half strength */
+
+  /* ── Accents (the flavour wall) ──
+     Taro leads: a milk-tea tan accent collides with the warm tints the
+     cards already use, and taro sits ~200° away. If you retheme, keep the
+     tint hues at least ~12° apart or two tool cards read as identical. */
+  --accent:   #c9a0ea;  /* taro            */
+  --accent2:  #f2a0bd;  /* strawberry milk */
+  --cyan:     #8ed4c4;  /* jasmine green   */
+  --green:    #a9c96a;  /* matcha          */
+  --yellow:   #f0cf8a;  /* brown sugar     */
+  --red:      #f0736f;  /* lychee          */
+  --orange:   #eb8a3c;  /* thai tea        */
+
+  /* ── Type ── */
+  --text:  #f7efe4;  /* milk foam    — headings, primary  */
+  --body:  #e2d6c6;  /* oat milk     — running text       */
+  --muted: #a99584;  /* kraft sleeve — labels, secondary  */
+
+  /* ── Shape and motion ── */
+  --radius:    16px;
+  --radius-sm: 8px;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace,
+               SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --shadow:    0 20px 45px rgba(0, 0, 0, .45);
+
+  /* ── Glass (re-derived over the boba base) ── */
+  --glass:        rgba(46, 37, 33, 0.50);
+  --glass-strong: rgba(22, 17, 16, 0.66);
+  --glass-border: rgba(247, 239, 228, 0.12);
+  --glass-hi:     rgba(255, 250, 244, 0.14);
+  --glass-blur:   18px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, .30), inset 0 1px 0 rgba(255,250,244,.05);
+
+  /* ── Tinted washes. Derived, so they follow the theme on their own. ── */
+  --accent-bg:   color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 38%, transparent);
+  --green-bg:    color-mix(in srgb, var(--green)  12%, transparent);
+  --green-line:  color-mix(in srgb, var(--green)  38%, transparent);
+  --yellow-bg:   color-mix(in srgb, var(--yellow) 12%, transparent);
+  --yellow-line: color-mix(in srgb, var(--yellow) 38%, transparent);
+  --cyan-bg:     color-mix(in srgb, var(--cyan)   12%, transparent);
+  --cyan-line:   color-mix(in srgb, var(--cyan)   38%, transparent);
+  --red-bg:      color-mix(in srgb, var(--red)    12%, transparent);
+  --red-line:    color-mix(in srgb, var(--red)    38%, transparent);
+
+  /* Text laid on a solid accent fill (buttons, chips, ::selection). */
+  --on-accent: #1e1815;
+
+  /* Three tapioca pearls, used as a mask so they inherit currentColor.
+     A cluster rather than a lone circle — one dot just reads as a bullet. */
+  --pearl-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23000'%3E%3Ccircle cx='8' cy='15.5' r='5.6'/%3E%3Ccircle cx='16' cy='15.5' r='5.6'/%3E%3Ccircle cx='12' cy='7.6' r='5.6'/%3E%3C/g%3E%3C/svg%3E");
+
+  /* Pearls settled along the bottom of the cup. */
+  --pearl-band: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='26' viewBox='0 0 34 26'%3E%3Cg fill='%23000'%3E%3Ccircle cx='8' cy='20' r='6'/%3E%3Ccircle cx='25' cy='21' r='5'/%3E%3Ccircle cx='17' cy='10' r='4'/%3E%3C/g%3E%3C/svg%3E");
 }
+
+[data-theme="light"] {
+  --bg:          #f3e7d6;  /* milk tea  */
+  --surface:     #fdf8f0;  /* milk foam */
+  --surface2:    #e5d5bf;  /* oat milk  */
+  --sink:        #eadcc7;
+  --border:      #b8a184;  /* kraft */
+  --border-soft: #d8c6ab;
+
+  /* Tuned against --surface2, the darkest light surface — chips, table heads
+     and pane heads all sit on it, and the earlier values (checked only against
+     --bg and --surface) landed at 4.1–4.4:1 there. Same hues, a shade deeper. */
+  --accent:   #67399c;  /* deep taro   */
+  --accent2:  #a23261;  /* strawberry  */
+  --cyan:     #2b665e;  /* jasmine     */
+  --green:    #49651a;  /* matcha      */
+  --yellow:   #77570e;  /* brown sugar */
+  --red:      #a8322e;  /* lychee      */
+  --orange:   #924812;  /* thai tea    */
+
+  --text:  #2b211a;
+  --body:  #493c2f;
+  --muted: #5f5244;
+
+  --shadow: 0 20px 45px rgba(62, 44, 30, .14);
+
+  --glass:        rgba(255, 250, 244, 0.55);
+  --glass-strong: rgba(255, 250, 244, 0.72);
+  --glass-border: rgba(255, 250, 244, 0.7);
+  --glass-hi:     rgba(255, 253, 250, 0.9);
+  --glass-shadow: 0 8px 32px rgba(62, 44, 30, .12), inset 0 1px 0 rgba(255,250,244,.6);
+
+  /* The washes read thin on a light ground, so they carry a little more. */
+  --accent-bg:   color-mix(in srgb, var(--accent) 10%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 34%, transparent);
+  --green-bg:    color-mix(in srgb, var(--green)  10%, transparent);
+  --green-line:  color-mix(in srgb, var(--green)  34%, transparent);
+  --yellow-bg:   color-mix(in srgb, var(--yellow) 10%, transparent);
+  --yellow-line: color-mix(in srgb, var(--yellow) 34%, transparent);
+  --cyan-bg:     color-mix(in srgb, var(--cyan)   10%, transparent);
+  --cyan-line:   color-mix(in srgb, var(--cyan)   34%, transparent);
+  --red-bg:      color-mix(in srgb, var(--red)    10%, transparent);
+  --red-line:    color-mix(in srgb, var(--red)    34%, transparent);
+
+  --on-accent: #fdf8f0;
+}
+
+/* ═══ Shared chrome ════════════════════════════════════════════════════
+   The bits every page needs to look like the same site: the focus ring,
+   the boba-cup brand, the breadcrumb topbar and the theme toggle. Pages
+   keep their own layout CSS; this is only the furniture.
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* Plain :focus-visible, not :where(...): a zero-specificity focus ring loses
+   to any element rule that touches outline, and a silently missing ring is
+   worse than one a page cannot restyle. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection { background: var(--accent); color: var(--on-accent); }
+
+/* ── Topbar: brand mark, breadcrumb, theme toggle ── */
+.site-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.site-bar .site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.site-bar .site-brand:hover { color: var(--text); }
+.site-bar .site-brand svg { flex: none; color: var(--accent); }
+
+.site-bar .sep { color: var(--muted); }
+.site-bar .crumb { color: var(--body); letter-spacing: .04em; }
+.site-bar .spacer { flex: 1 1 auto; }
+
+.site-bar .bar-link {
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.site-bar .bar-link:hover { color: var(--accent); }
+
+/* ── Theme toggle (wired up by tools/theme.js via #btn-theme) ── */
+.btn-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.btn-theme:hover { color: var(--text); border-color: var(--accent); }
+.btn-theme:active { transform: scale(.96); }
+
+/* ── Site footer strip shared by the standalone pages ── */
+.site-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 28px 0 36px;
+  border-top: 1px solid var(--border-soft);
+  color: var(--muted);
+  font-size: 13px;
+}
+.site-foot .spacer { flex: 1 1 auto; }
+.site-foot a { color: var(--body); text-decoration: none; }
+.site-foot a:hover { color: var(--accent); }
+
+@media (max-width: 620px) {
+  .site-bar { flex-wrap: wrap; }
+  .btn-theme .theme-label { display: none; }
+  .btn-theme { padding: 0 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-theme { transition: none; }
+  .btn-theme:active { transform: none; }
+}
+</style>
+<script>
+/* Shared theme controller
+   ─────────────────────────────────────────────────────────────────────
+   Sets data-theme="light" on <html> before first paint so the page never
+   flashes the wrong palette, exposes window.toggleTheme(), and wires up a
+   #btn-theme button if the page has one.
+
+   The choice persists to the localStorage key "hl7-tools-theme", which is
+   shared with the tools in the hl7-dicom-tools repo — a visitor's choice
+   follows them between the landing page and the tools.
+
+   Every page on the site loads this together with /assets/tokens.css,
+   which is where the palette itself lives. Storage can throw outright in
+   a hardened browser (site data blocked, sandboxed iframe), so every
+   access is guarded and the page falls back to dark.
+   ───────────────────────────────────────────────────────────────────── */
+(function () {
+  const STORAGE_KEY = 'hl7-tools-theme';
+
+  function read() {
+    try { return localStorage.getItem(STORAGE_KEY); } catch (e) { return null; }
+  }
+
+  function write(value) {
+    try { localStorage.setItem(STORAGE_KEY, value); } catch (e) { /* not fatal */ }
+  }
+
+  /* Apply the saved theme immediately — before paint — to prevent a flash */
+  if (read() === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+
+  function getTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'dark';
+  }
+
+  function syncBtn(btn, theme) {
+    if (!btn) return;
+    const icon  = btn.querySelector('.theme-icon');
+    const label = btn.querySelector('.theme-label');
+    if (icon)  icon.textContent  = theme === 'dark' ? '☀️' : '🌙';
+    if (label) label.textContent = theme === 'dark' ? 'Light' : 'Dark';
+    btn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    btn.setAttribute('aria-label', btn.title);
+  }
+
+  window.toggleTheme = function () {
+    const next = getTheme() === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    write(next);
+    syncBtn(document.getElementById('btn-theme'), next);
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('btn-theme');
+    if (btn) {
+      btn.addEventListener('click', window.toggleTheme);
+      syncBtn(btn, getTheme());
+    }
+  });
+})();
+</script>
+<style>
+/* Palette and shared chrome are inlined above (mirrored from the
+   main site's assets/tokens.css). */
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--fg);overflow:hidden;
-  font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+body{margin:0;background:var(--bg);color:var(--text);overflow:hidden;
+  display:flex;flex-direction:column;
+  font:13px/1.5 var(--font-mono)}
 button,input,select,textarea{font:inherit;color:inherit}
 ::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px;border:2px solid var(--bg)}
-::-webkit-scrollbar-thumb:hover{background:var(--dim)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 ::-webkit-scrollbar-track{background:transparent}
 
 /* ---------- chrome ---------- */
-header{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg2);
-  border-bottom:1px solid var(--line);flex-wrap:wrap}
+header{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--surface);
+  border-bottom:1px solid var(--border);flex-wrap:wrap;flex:0 0 auto}
+header .home{display:inline-flex;align-items:center;color:var(--accent);flex:none}
+header .home:hover{color:var(--accent2)}
+header .btn-theme{height:26px;font-size:11px;background:var(--sink)}
 header h1{margin:0;font-size:14px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
-header h1 span{color:var(--purple)}
-.badge{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--bg3);
-  color:var(--dim);border:1px solid var(--line);white-space:nowrap}
+header h1 span{color:var(--accent)}
+.badge{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--sink);
+  color:var(--muted);border:1px solid var(--border);white-space:nowrap}
 .spacer{flex:1}
-button{background:var(--bg3);border:1px solid var(--line);color:var(--fg);
+button{background:var(--sink);border:1px solid var(--border);color:var(--text);
   padding:5px 11px;border-radius:6px;cursor:pointer;transition:.12s;white-space:nowrap}
-button:hover{border-color:var(--purple);color:var(--purple);background:var(--bg4)}
-button.primary{background:var(--purple);border-color:var(--purple);color:#21222c;font-weight:600}
-button.primary:hover{background:var(--pink);border-color:var(--pink);color:#21222c}
+button:hover{border-color:var(--accent);color:var(--accent);background:var(--surface2)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+button.primary:hover{background:var(--accent2);border-color:var(--accent2);color:var(--on-accent)}
 button.ghost{background:transparent}
 button.sm{padding:2px 7px;font-size:11px;border-radius:5px}
-button.icon{padding:2px 6px;font-size:12px;line-height:1.2;background:transparent;border-color:transparent;color:var(--dim)}
-button.icon:hover{background:var(--bg4);color:var(--fg)}
+button.icon{padding:2px 6px;font-size:12px;line-height:1.2;background:transparent;border-color:transparent;color:var(--muted)}
+button.icon:hover{background:var(--surface2);color:var(--text)}
 button.danger:hover{border-color:var(--red);color:var(--red)}
-select,input[type=text],textarea{background:var(--bg3);border:1px solid var(--line);
+select,input[type=text],textarea{background:var(--sink);border:1px solid var(--border);
   border-radius:6px;padding:4px 7px;outline:none;min-width:0}
-select:focus,input:focus,textarea:focus{border-color:var(--purple)}
+select:focus,input:focus,textarea:focus{border-color:var(--accent)}
 select{cursor:pointer}
 textarea{resize:none;width:100%;font:inherit;line-height:1.6}
-.kbd{display:inline-block;padding:0 5px;border:1px solid var(--line);border-radius:4px;
-  background:var(--bg3);color:var(--dim);font-size:11px}
+.kbd{display:inline-block;padding:0 5px;border:1px solid var(--border);border-radius:4px;
+  background:var(--sink);color:var(--muted);font-size:11px}
 
 #main{display:grid;grid-template-columns:minmax(290px,1fr) minmax(400px,1.3fr) minmax(340px,1.1fr);
-  height:calc(100vh - 45px)}
-.col{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line);overflow:hidden}
+  flex:1 1 auto;min-height:0}
+.col{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--border);overflow:hidden}
 .col:last-child{border-right:0}
-.colhead{display:flex;align-items:center;gap:8px;padding:7px 11px;background:var(--bg2);
-  border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase;
-  letter-spacing:.6px;color:var(--dim);flex:0 0 auto}
+.colhead{display:flex;align-items:center;gap:8px;padding:7px 11px;background:var(--surface);
+  border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--muted);flex:0 0 auto}
 .colhead b{color:var(--cyan);font-weight:600}
-.subbar{display:flex;align-items:center;gap:6px;padding:6px 9px;background:var(--bg3);
-  border-bottom:1px solid var(--line);flex:0 0 auto}
+.subbar{display:flex;align-items:center;gap:6px;padding:6px 9px;background:var(--sink);
+  border-bottom:1px solid var(--border);flex:0 0 auto}
 .subbar input[type=text]{flex:1;font-size:12px}
 .colbody{flex:1;overflow:auto;min-height:0}
-.chk{display:flex;align-items:center;gap:4px;color:var(--dim);font-size:11px;cursor:pointer;white-space:nowrap}
+.chk{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:11px;cursor:pointer;white-space:nowrap}
 
 /* ---------- responsive ---------- */
 @media (max-width:1180px){
   #main{grid-template-columns:minmax(260px,1fr) minmax(330px,1.15fr);
         grid-template-rows:minmax(0,1.05fr) minmax(0,.95fr)}
   #main > .col:nth-child(2){border-right:0}
-  #main > .col:nth-child(3){grid-column:1 / -1;border-top:1px solid var(--line)}
+  #main > .col:nth-child(3){grid-column:1 / -1;border-top:1px solid var(--border)}
 }
 @media (max-width:780px){
   #main{grid-template-columns:1fr;grid-template-rows:minmax(220px,.9fr) minmax(240px,1fr) minmax(240px,1fr)}
-  #main > .col{border-right:0;border-bottom:1px solid var(--line)}
+  #main > .col{border-right:0;border-bottom:1px solid var(--border)}
   .slots{grid-template-columns:1fr;gap:4px}
   .arrowcell{transform:rotate(90deg);height:14px}
 }
 
 /* ---------- message tree ---------- */
 .segbar{display:flex;align-items:center;gap:7px;padding:4px 11px;cursor:pointer;
-  background:var(--bg3);border-left:3px solid var(--purple);position:sticky;top:0;z-index:2}
-.segbar:hover{background:var(--bg4)}
-.segbar .nm{color:var(--purple);font-weight:600}
-.segbar .desc{color:var(--dim);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.segbar .caret{color:var(--dim);width:9px;flex:0 0 9px}
+  background:var(--sink);border-left:3px solid var(--accent);position:sticky;top:0;z-index:2}
+.segbar:hover{background:var(--surface2)}
+.segbar .nm{color:var(--accent);font-weight:600}
+.segbar .desc{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.segbar .caret{color:var(--muted);width:9px;flex:0 0 9px}
 .node{display:flex;align-items:center;gap:8px;padding:2px 10px 2px 0;cursor:grab;
   border-left:3px solid transparent}
-.node:hover{background:var(--bg4);border-left-color:var(--cyan)}
+.node:hover{background:var(--surface2);border-left-color:var(--cyan)}
 .node:active{cursor:grabbing}
 .node .path{color:var(--cyan);flex:0 0 104px;text-align:right;font-size:11.5px}
 .node.comp .path{color:var(--green);opacity:.9}
-.node .lbl{color:var(--dim);font-size:11px;flex:0 0 120px;overflow:hidden;
+.node .lbl{color:var(--muted);font-size:11px;flex:0 0 120px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
-.node .val{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.node .val:empty::after{content:'\2014';color:var(--line)}
-.node.picked{background:rgba(80,250,123,.14);border-left-color:var(--green)}
+.node .val{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.node .val:empty::after{content:'\2014';color:var(--border)}
+.node.picked{background:color-mix(in srgb, var(--green) 18%, transparent);border-left-color:var(--green)}
 .node.dragging{opacity:.4}
-body.dnd .node{border-left-color:rgba(255,184,108,.25)}
-body.dnd .node.over{background:rgba(255,184,108,.2);border-left-color:var(--orange);
+body.dnd .node{border-left-color:color-mix(in srgb, var(--orange) 30%, transparent)}
+body.dnd .node.over{background:color-mix(in srgb, var(--orange) 24%, transparent);border-left-color:var(--orange);
   outline:1px dashed var(--orange);outline-offset:-2px}
 
 /* ---------- mapping cards ---------- */
 #rules{padding:10px 11px}
-.rule{border:1px solid var(--line);border-radius:var(--r);margin:0 0 9px;background:var(--bg3);
+.rule{border:1px solid var(--border);border-radius:var(--radius-sm);margin:0 0 9px;background:var(--sink);
   overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .rule.off{opacity:.45}
 .rule.rdrag{opacity:.35}
-.rule.rover{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
-.rulehead{display:flex;align-items:center;gap:7px;padding:5px 8px;background:var(--bg2);
-  border-bottom:1px solid var(--line)}
-.grip{cursor:grab;color:var(--dim);letter-spacing:-1px;user-select:none}
+.rule.rover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.rulehead{display:flex;align-items:center;gap:7px;padding:5px 8px;background:var(--surface);
+  border-bottom:1px solid var(--border)}
+.grip{cursor:grab;color:var(--muted);letter-spacing:-1px;user-select:none}
 .grip:active{cursor:grabbing}
-.rulehead .n{color:var(--dim);font-size:11px;min-width:12px}
+.rulehead .n{color:var(--muted);font-size:11px;min-width:12px}
 .rulehead .ttl{flex:1;color:var(--yellow);font-size:11.5px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 .rulebody{padding:9px}
 .slots{display:grid;grid-template-columns:1fr 20px 1fr;gap:6px;align-items:stretch}
-.slot{border:1px solid var(--line);border-radius:6px;background:var(--bg2);padding:6px;
+.slot{border:1px solid var(--border);border-radius:6px;background:var(--surface);padding:6px;
   display:flex;flex-direction:column;gap:5px;min-width:0}
-.slot .cap{font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+.slot .cap{font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
 .slot.src .cap{color:var(--cyan)}
 .slot.tgt .cap{color:var(--orange)}
 .slot .line{display:flex;gap:5px;align-items:center;min-width:0}
 .slot select{flex:1;min-width:0;font-size:12px}
 .slot input[type=text]{flex:1;min-width:0}
-.slot .meta{font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:14px}
+.slot .meta{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:14px}
 .pathin{color:var(--cyan)}
 .pathin.tgt{color:var(--orange)}
-.arrowcell{display:flex;align-items:center;justify-content:center;color:var(--pink);font-size:15px}
-body.dnd .slot{border-style:dashed;border-color:var(--dim)}
-body.dnd .slot.over{border-color:var(--green);background:rgba(80,250,123,.12)}
-.dz{margin:2px 0 10px;padding:14px;border:2px dashed var(--line);border-radius:var(--r);
-  text-align:center;color:var(--dim);font-size:12px;display:none}
+.arrowcell{display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:15px}
+body.dnd .slot{border-style:dashed;border-color:var(--muted)}
+body.dnd .slot.over{border-color:var(--green);background:color-mix(in srgb, var(--green) 16%, transparent)}
+.dz{margin:2px 0 10px;padding:14px;border:2px dashed var(--border);border-radius:var(--radius-sm);
+  text-align:center;color:var(--muted);font-size:12px;display:none}
 body.dnd .dz{display:block}
-body.dnd .dz.over{border-color:var(--green);color:var(--green);background:rgba(80,250,123,.08)}
+body.dnd .dz.over{border-color:var(--green);color:var(--green);background:color-mix(in srgb, var(--green) 12%, transparent)}
 
 .pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;align-items:center}
-.pill{display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--line);
+.pill{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);
   border-radius:20px;padding:2px 4px 2px 10px}
-.pill .pn{color:var(--pink);font-size:11.5px;white-space:nowrap}
-.pill input[type=text]{padding:1px 6px;font-size:11px;border-radius:12px;background:var(--bg3)}
-.pill button{padding:0 5px;border:0;background:transparent;color:var(--dim);border-radius:50%}
-.pill button:hover{color:var(--red);background:var(--bg4)}
+.pill .pn{color:var(--accent2);font-size:11.5px;white-space:nowrap}
+.pill input[type=text]{padding:1px 6px;font-size:11px;border-radius:12px;background:var(--sink)}
+.pill button{padding:0 5px;border:0;background:transparent;color:var(--muted);border-radius:50%}
+.pill button:hover{color:var(--red);background:var(--surface2)}
 .cond{display:flex;align-items:center;gap:5px;margin-top:8px;padding:6px 7px;
-  background:rgba(241,250,140,.06);border:1px solid rgba(241,250,140,.25);border-radius:6px;flex-wrap:wrap}
+  background:color-mix(in srgb, var(--yellow) 10%, transparent);border:1px solid color-mix(in srgb, var(--yellow) 32%, transparent);border-radius:6px;flex-wrap:wrap}
 .cond .cap{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--yellow)}
 .cond input[type=text]{min-width:70px}
-.empty{color:var(--dim);text-align:center;padding:34px 22px;font-size:12px;line-height:2}
-.empty b{color:var(--fg)}
+.empty{color:var(--muted);text-align:center;padding:34px 22px;font-size:12px;line-height:2}
+.empty b{color:var(--text)}
 
 /* ---------- output ---------- */
-.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--line);flex:0 0 auto}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex:0 0 auto}
 .tab{padding:7px 13px;cursor:pointer;font-size:11px;text-transform:uppercase;
-  letter-spacing:.5px;color:var(--dim);border-bottom:2px solid transparent}
-.tab:hover{color:var(--fg)}
-.tab.on{color:var(--purple);border-bottom-color:var(--purple);background:var(--bg3)}
+  letter-spacing:.5px;color:var(--muted);border-bottom:2px solid transparent}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent);background:var(--sink)}
 pre.code{margin:0;padding:12px;white-space:pre;overflow:auto;font-size:12px;line-height:1.65;tab-size:2}
-.k{color:var(--pink)}.s{color:var(--yellow)}.c{color:var(--dim);font-style:italic}
-.n{color:var(--purple)}
+.k{color:var(--accent2)}.s{color:var(--yellow)}.c{color:var(--muted);font-style:italic}
+.n{color:var(--accent)}
 .pane{display:none;height:100%;overflow:auto}
 .pane.on{display:block}
-.secttl{padding:10px 12px 4px;color:var(--dim);font-size:10.5px;
+.secttl{padding:10px 12px 4px;color:var(--muted);font-size:10.5px;
   text-transform:uppercase;letter-spacing:.6px}
 .diffline{padding:1px 12px;white-space:pre-wrap;word-break:break-all;font-size:12px}
-.diffline.add{background:rgba(80,250,123,.12);border-left:3px solid var(--green)}
-.diffline.same{border-left:3px solid transparent;color:var(--dim)}
+.diffline.add{background:color-mix(in srgb, var(--green) 16%, transparent);border-left:3px solid var(--green)}
+.diffline.same{border-left:3px solid transparent;color:var(--muted)}
 .err{color:var(--red);padding:12px;white-space:pre-wrap}
 
 /* ---------- recipes modal ---------- */
-.overlay{position:fixed;inset:0;background:rgba(20,21,28,.75);z-index:80;display:none;
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80;display:none;
   align-items:center;justify-content:center;padding:26px}
 .overlay.on{display:flex}
-.modal{background:var(--bg);border:1px solid var(--line);border-radius:10px;width:min(940px,100%);
+.modal{background:var(--bg);border:1px solid var(--border);border-radius:10px;width:min(940px,100%);
   max-height:100%;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden}
-.modal header{background:var(--bg2)}
+.modal header{background:var(--surface)}
 .modal .body{overflow:auto;padding:12px 14px}
-.cats{display:flex;gap:6px;flex-wrap:wrap;padding:9px 14px;background:var(--bg3);
-  border-bottom:1px solid var(--line)}
-.cat{padding:3px 10px;border-radius:14px;border:1px solid var(--line);color:var(--dim);
+.cats{display:flex;gap:6px;flex-wrap:wrap;padding:9px 14px;background:var(--sink);
+  border-bottom:1px solid var(--border)}
+.cat{padding:3px 10px;border-radius:14px;border:1px solid var(--border);color:var(--muted);
   cursor:pointer;font-size:11.5px}
-.cat:hover{color:var(--fg)}
-.cat.on{background:var(--purple);border-color:var(--purple);color:#21222c;font-weight:600}
+.cat:hover{color:var(--text)}
+.cat.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
 .rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.rcard{border:1px solid var(--line);border-radius:var(--r);background:var(--bg3);padding:10px;
+.rcard{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--sink);padding:10px;
   display:flex;flex-direction:column;gap:6px}
-.rcard:hover{border-color:var(--purple)}
-.rcard .rt{color:var(--fg);font-weight:600;font-size:12.5px}
-.rcard .rd{color:var(--dim);font-size:11.5px;line-height:1.5}
-.rcard .rs{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding:5px 7px;
+.rcard:hover{border-color:var(--accent)}
+.rcard .rt{color:var(--text);font-weight:600;font-size:12.5px}
+.rcard .rd{color:var(--muted);font-size:11.5px;line-height:1.5}
+.rcard .rs{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:5px 7px;
   font-size:11px;color:var(--cyan);white-space:pre-wrap;word-break:break-word;line-height:1.6}
-.rcard .rs em{color:var(--pink);font-style:normal}
+.rcard .rs em{color:var(--accent2);font-style:normal}
 .rcard .rf{display:flex;align-items:center;gap:6px;margin-top:auto}
-.tag{font-size:10px;padding:1px 6px;border-radius:9px;background:var(--bg2);
-  border:1px solid var(--line);color:var(--dim)}
+.tag{font-size:10px;padding:1px 6px;border-radius:9px;background:var(--surface);
+  border:1px solid var(--border);color:var(--muted)}
 
 .arm{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:60;
-  background:var(--green);color:#21222c;padding:6px 16px;border-radius:20px;
+  background:var(--green);color:var(--on-accent);padding:6px 16px;border-radius:20px;
   font-weight:600;font-size:12px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
-.toast{position:fixed;top:12px;right:12px;background:var(--green);color:#21222c;
+.toast{position:fixed;top:12px;right:12px;background:var(--green);color:var(--on-accent);
   padding:7px 15px;border-radius:6px;font-weight:600;z-index:99;font-size:12px;
   box-shadow:0 4px 16px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
 <header>
+  <a class="home" href="https://coffeemilktea.github.io/" title="Healthcare Data Tools"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7.5h12l-1.3 12.6a1.6 1.6 0 0 1-1.6 1.4H8.9a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M4.6 7.5h14.8"/><path d="M13.6 7.5V3.2l2.9-1.1"/><circle cx="10.2" cy="17.4" r="1.05" fill="currentColor" stroke="none"/><circle cx="13.8" cy="17.4" r="1.05" fill="currentColor" stroke="none"/><circle cx="12" cy="19.7" r="1.05" fill="currentColor" stroke="none"/></svg></a>
   <h1>HL7 Interface <span>Javascript Builder</span></h1>
   <span class="badge">HL7 v2.5.1</span>
   <span class="spacer"></span>
@@ -210,6 +514,7 @@ pre.code{margin:0;padding:12px;white-space:pre;overflow:auto;font-size:12px;line
   <button id="saveBtn" class="sm ghost">Save</button>
   <button id="loadBtn" class="sm ghost">Load</button>
   <button id="clearBtn" class="sm ghost danger">Clear</button>
+  <button class="btn-theme" id="btn-theme" type="button"><span class="theme-icon">☀️</span><span class="theme-label">Light</span></button>
 </header>
 
 <div id="main">
@@ -220,9 +525,9 @@ pre.code{margin:0;padding:12px;white-space:pre;overflow:auto;font-size:12px;line
       <select id="sampleSel" style="flex:1" title="Load a sample message"></select>
       <button id="editMsg" class="sm" title="Show / hide the raw message">&#9998; Edit</button>
     </div>
-    <div id="msgWrap" style="flex:0 0 auto;border-bottom:1px solid var(--line);display:none">
+    <div id="msgWrap" style="flex:0 0 auto;border-bottom:1px solid var(--border);display:none">
       <textarea id="msgIn" rows="7" spellcheck="false"
-        style="border:0;border-radius:0;background:var(--bg3)"></textarea>
+        style="border:0;border-radius:0;background:var(--sink)"></textarea>
     </div>
     <div class="subbar">
       <input type="text" id="treeFind" placeholder="Filter fields…  e.g. name, PID-5, MRN">
@@ -932,7 +1237,7 @@ function slotHTML(r, which){
       val='<input type="text" class="pathin" data-f="src.path" value="'+esc(o.path)+'" placeholder="drop a field, or type PID-5.1">';
       meta=pathHint(o.path);
     } else if(o.kind==='now'||o.kind==='uuid'){
-      val='<span style="color:var(--dim);font-size:11.5px">generated when the channel runs</span>';
+      val='<span style="color:var(--muted);font-size:11.5px">generated when the channel runs</span>';
       meta = o.kind==='now' ? 'DateUtil.getCurrentDate' : 'UUIDGenerator.getUUID';
     } else {
       const ph = o.kind==='template' ? '${PID-5.2} ${PID-5.1}'
@@ -964,7 +1269,7 @@ function renderRules(){
     el.innerHTML='<div class="empty"><b>No mappings yet.</b><br>'+
       '<span style="color:var(--cyan)">Drag</span> a field from the message onto another field to map it.<br>'+
       'Or <span style="color:var(--cyan)">click</span> a source field, then click the target.<br>'+
-      'Or open <span style="color:var(--purple)">&#9733; Recipes</span> for ready-made transformers.'+
+      'Or open <span style="color:var(--accent)">&#9733; Recipes</span> for ready-made transformers.'+
       '</div><div class="dz" data-dz="new">Drop a field here to start a mapping</div>';
     return;
   }
