@@ -450,6 +450,61 @@ body.dnd .dz.over{border-color:var(--green);color:var(--green);background:color-
 .empty{color:var(--muted);text-align:center;padding:34px 22px;font-size:12px;line-height:2}
 .empty b{color:var(--text)}
 
+/* ---------- live value flow inside a mapping card ---------- */
+.flow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px;
+  padding:6px 7px;background:var(--sink);border:1px solid var(--border-soft);border-radius:6px}
+.flow .fsep{color:var(--accent2);flex:0 0 auto}
+.vchip{display:inline-block;max-width:190px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;vertical-align:bottom;padding:1px 7px;border-radius:10px;
+  background:var(--surface2);border:1px solid var(--border);font-size:11.5px}
+.vchip.src{color:var(--cyan)}
+.vchip.mid{color:var(--accent2)}
+.vchip.out{color:var(--green);border-color:var(--green)}
+.vchip.was{color:var(--muted);text-decoration:line-through;opacity:.8}
+.vchip.none{color:var(--muted);font-style:italic}
+.flow .fstate{margin-left:auto;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.flow .fstate.skipped{color:var(--yellow)}
+.flow .fstate.pending{color:var(--muted)}
+.flow .fstate.error{color:var(--red)}
+.rule.dim{opacity:.5}
+.rule.step-now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.rule.hl{border-color:var(--cyan)}
+
+/* ---------- tree: usage badges, highlight, inline edit ---------- */
+.node .use{flex:0 0 auto;min-width:15px;height:15px;line-height:15px;text-align:center;
+  border-radius:8px;font-size:9.5px;background:var(--accent);color:var(--sink);font-weight:700}
+.node .use.tgt{background:var(--orange)}
+.node.hl-src{background:rgba(142,212,196,.16);border-left-color:var(--cyan)}
+.node.hl-tgt{background:rgba(235,138,60,.16);border-left-color:var(--orange)}
+.node .val.editing{flex:1}
+.node input.valedit{width:100%;padding:0 5px;font:inherit;background:var(--surface2);
+  border:1px solid var(--accent);border-radius:4px;color:var(--text)}
+
+/* ---------- preview step scrubber ---------- */
+.stepper{display:flex;align-items:center;gap:8px;padding:8px 12px;
+  border-bottom:1px solid var(--border-soft);background:var(--surface2);
+  position:sticky;top:0;z-index:3}
+.stepper input[type=range]{flex:1;accent-color:var(--accent);min-width:60px}
+.stepper .slabel{font-size:11px;color:var(--muted);white-space:nowrap}
+.stepper .slabel b{color:var(--text);font-weight:600}
+
+/* ---------- header menu ---------- */
+.menuwrap{position:relative}
+.menu-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:70;min-width:178px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:5px;box-shadow:0 12px 32px rgba(0,0,0,.45);display:none}
+.menu-pop.on{display:block}
+.menu-pop button{display:block;width:100%;text-align:left;border:0;background:transparent;
+  padding:5px 9px;border-radius:5px;font-size:12px}
+.menu-pop button:hover{background:var(--surface2);color:var(--accent)}
+.menu-pop hr{border:0;border-top:1px solid var(--border-soft);margin:4px 2px}
+
+/* ---------- keyboard help ---------- */
+.keys{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;align-items:center}
+.keys kbd{justify-self:start;padding:2px 7px;border:1px solid var(--border);border-radius:5px;
+  background:var(--surface2);font:inherit;font-size:11.5px;color:var(--accent)}
+.keys span{color:var(--body);font-size:12px}
+
 /* ---------- output ---------- */
 .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex:0 0 auto}
 .tab{padding:7px 13px;cursor:pointer;font-size:11px;text-transform:uppercase;
@@ -511,9 +566,22 @@ pre.code{margin:0;padding:12px;white-space:pre;overflow:auto;font-size:12px;line
   <span class="spacer"></span>
   <button id="recipeBtn" class="primary">&#9733; Recipes</button>
   <button id="addRule">+ Mapping</button>
-  <button id="saveBtn" class="sm ghost">Save</button>
-  <button id="loadBtn" class="sm ghost">Load</button>
-  <button id="clearBtn" class="sm ghost danger">Clear</button>
+  <button id="undoBtn" class="sm ghost" title="Undo (&#8984;Z)" disabled>&#8630;</button>
+  <button id="redoBtn" class="sm ghost" title="Redo (&#8679;&#8984;Z)" disabled>&#8631;</button>
+  <span class="menuwrap">
+    <button id="menuBtn" class="sm ghost" title="More">&#8943;</button>
+    <div class="menu-pop" id="menuPop">
+      <button data-m="save">Save to browser</button>
+      <button data-m="load">Load from browser</button>
+      <hr>
+      <button data-m="export">Export mappings (.json)</button>
+      <button data-m="import">Import mappings&#8230;</button>
+      <hr>
+      <button data-m="keys">Keyboard shortcuts</button>
+      <button data-m="clear">Clear all mappings</button>
+    </div>
+  </span>
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
   <button class="btn-theme" id="btn-theme" type="button"><span class="theme-icon">☀️</span><span class="theme-label">Light</span></button>
 </header>
 
@@ -558,7 +626,15 @@ pre.code{margin:0;padding:12px;white-space:pre;overflow:auto;font-size:12px;line
     <div class="colbody">
       <div class="pane on" id="pane-js"><pre class="code" id="outJs"></pre></div>
       <div class="pane" id="pane-xml"><pre class="code" id="outXml"></pre></div>
-      <div class="pane" id="pane-prev"><div id="outPrev"></div></div>
+      <div class="pane" id="pane-prev">
+        <div class="stepper" id="stepper">
+          <button class="sm" id="stepPrev" title="Previous mapping">&#8249;</button>
+          <input type="range" id="stepRange" min="0" max="0" value="0">
+          <button class="sm" id="stepNext" title="Next mapping">&#8250;</button>
+          <span class="slabel" id="stepLabel"></span>
+        </div>
+        <div id="outPrev"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -575,6 +651,35 @@ pre.code{margin:0;padding:12px;white-space:pre;overflow:auto;font-size:12px;line
     </header>
     <div class="cats" id="cats"></div>
     <div class="body"><div class="rgrid" id="rgrid"></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="keysOverlay">
+  <div class="modal" style="width:min(460px,100%)">
+    <header>
+      <h1>Keyboard <span>shortcuts</span></h1>
+      <span class="spacer"></span>
+      <button id="closeKeys" class="sm">Close</button>
+    </header>
+    <div class="body">
+      <div class="keys">
+        <kbd>/</kbd><span>Focus the field filter</span>
+        <kbd>n</kbd><span>New mapping</span>
+        <kbd>r</kbd><span>Open the recipe library</span>
+        <kbd>1</kbd><span>JavaScript tab</span>
+        <kbd>2</kbd><span>Channel XML tab</span>
+        <kbd>3</kbd><span>Preview tab</span>
+        <kbd>&#8592; &#8594;</kbd><span>Step through mappings (Preview tab)</span>
+        <kbd>&#8984;Z</kbd><span>Undo</span>
+        <kbd>&#8679;&#8984;Z</kbd><span>Redo</span>
+        <kbd>Esc</kbd><span>Cancel a pick, close a dialog</span>
+        <kbd>?</kbd><span>This list</span>
+      </div>
+      <p style="color:var(--muted);font-size:11.5px;line-height:1.7;margin:14px 0 0">
+        In the message tree: drag a field onto another to map it, click a field then click its
+        target, or double-click a <em>value</em> to edit the sample message in place.
+      </p>
+    </div>
   </div>
 </div>
 
@@ -970,17 +1075,28 @@ function generateXML(){
 /* ============================================================
    Live preview — runs the same mappings in the browser
    ============================================================ */
-function runPreview(){
+function runPreview(limit){
   const src = parseHL7($('#msgIn').value);
   const out = JSON.parse(JSON.stringify(src));
   const maps = {};
   const errs = [];
+  const trace = [];
   RULES.forEach((r,i)=>{
-    if(!r.on) return;
+    /* One trace entry per mapping, in order. `state` is what the card shows:
+       ran / off / pending (past the step scrubber) / skipped (condition was
+       false) / error. */
+    const t = {i:i, id:r.id, state:'ran', from:'', steps:[], value:'',
+               was:'', target:'', cond:null};
+    trace.push(t);
+    if(!r.on){ t.state='off'; return; }
+    if(limit!==undefined && i>=limit){ t.state='pending'; return; }
     try{
       if(r.cond.on){
         const cp=parsePath(r.cond.path);
-        const a = cp ? readPath(src, cp) : '';
+        /* Read from `out`, not `src`: the generated JavaScript runs against a
+           msg that earlier mappings have already modified, so the preview has
+           to see those writes too or it diverges from Mirth. */
+        const a = cp ? readPath(out, cp) : '';
         const b = r.cond.val;
         let ok=false;
         switch(r.cond.op){
@@ -992,10 +1108,11 @@ function runPreview(){
           case 'empty': ok = a===''; break;
           case 'notempty': ok = a!==''; break;
         }
-        if(!ok) return;
+        t.cond = {val:a, ok:ok};
+        if(!ok){ t.state='skipped'; return; }
       }
       let val='';
-      if(r.tgt.kind==='clear') val='';
+      if(r.tgt.kind==='clear'){ val=''; t.from=''; }
       else{
         const s=r.src;
         if(s.kind==='literal') val=s.text;
@@ -1004,15 +1121,32 @@ function runPreview(){
         else if(s.kind==='uuid') val='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
           const rr=Math.random()*16|0; return (c==='x'?rr:(rr&3|8)).toString(16); });
         else if(s.kind==='template')
-          val = tmplParts(s.text).map(p=>p.lit!==undefined?p.lit:readPath(src,p.path)).join('');
-        else val = readPath(src, parsePath(s.path));
-        r.xf.forEach(t=>{ const d=XF[t.fn]; if(d) val = d.run(String(val), t.a||{}); });
+          val = tmplParts(s.text).map(p=>p.lit!==undefined?p.lit:readPath(out,p.path)).join('');
+        else val = readPath(out, parsePath(s.path));
+        t.from = String(val);
+        r.xf.forEach(x=>{
+          const d=XF[x.fn]; if(!d) return;
+          val = d.run(String(val), x.a||{});
+          t.steps.push({l:d.l, out:String(val)});
+        });
       }
-      if(r.tgt.kind==='channelMap'||r.tgt.kind==='connectorMap') maps[r.tgt.name]=val;
-      else writePath(out, parsePath(r.tgt.path), val);
-    }catch(e){ errs.push('Mapping '+(i+1)+': '+e.message); }
+      t.value = String(val);
+      if(r.tgt.kind==='channelMap'||r.tgt.kind==='connectorMap'){
+        t.target = (r.tgt.kind==='channelMap'?'channelMap.':'connectorMap.')+r.tgt.name;
+        t.was = maps[r.tgt.name]!==undefined ? String(maps[r.tgt.name]) : '';
+        maps[r.tgt.name]=val;
+      } else {
+        const tp = parsePath(r.tgt.path);
+        t.target = r.tgt.path;
+        t.was = tp ? readPath(out, tp) : '';
+        writePath(out, tp, val);
+      }
+    }catch(e){
+      errs.push('Mapping '+(i+1)+': '+e.message);
+      t.state='error'; t.value=e.message;
+    }
   });
-  return {text:serializeHL7(out), before:serializeHL7(src), maps, errs};
+  return {text:serializeHL7(out), before:serializeHL7(src), maps, errs, trace};
 }
 
 
@@ -1195,6 +1329,37 @@ const RECIPES = [
    Rendering
    ============================================================ */
 let COLLAPSED = {}, SHOW_EMPTY = false, FILTER = '', DRAG = null, CAT = 'All', RFIND = '';
+/* STEP is how many mappings the preview scrubber is applying; null means all of
+   them. TRACE is the last preview run, so cards can show real values without
+   re-running the whole thing per card. */
+let STEP = null, TRACE = [], USES = {};
+
+/* A value as it appears on a card: quoted when present, "empty" when not. */
+function vchip(v, cls){
+  v = v===undefined||v===null ? '' : String(v);
+  if(v==='') return '<span class="vchip none" title="empty">empty</span>';
+  return '<span class="vchip '+cls+'" title="'+esc(v)+'">'+esc(v)+'</span>';
+}
+/* The live From -> transform -> To strip under a card's slots. */
+function flowHTML(r){
+  const t = TRACE.find(x=>x.id===r.id);
+  if(!t) return '';
+  const label = {off:'disabled', pending:'not yet applied', skipped:'condition not met', error:'error'};
+  if(t.state!=='ran'){
+    const extra = t.state==='skipped' && t.cond
+      ? ' &middot; '+esc(r.cond.path)+' is '+vchip(t.cond.val,'src')
+      : t.state==='error' ? ' &middot; <span style="color:var(--red)">'+esc(t.value)+'</span>' : '';
+    return '<div class="flow"><span class="fstate '+t.state+'">'+label[t.state]+'</span>'+extra+'</div>';
+  }
+  let h = '<div class="flow">'+vchip(t.from,'src');
+  t.steps.forEach(st=>{
+    h += '<span class="fsep">&rarr;</span><span class="vchip mid" title="after '+esc(st.l)+
+         '">'+(st.out===''?'<em style="opacity:.7">empty</em>':esc(st.out))+'</span>';
+  });
+  h += '<span class="fsep">&rarr;</span>'+vchip(t.value,'out');
+  if(t.was!=='' && t.was!==t.value) h += ' <span class="vchip was" title="value being replaced">'+esc(t.was)+'</span>';
+  return h+'</div>';
+}
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function ruleTitle(r){
   const s=r.src, t=r.tgt;
@@ -1273,8 +1438,13 @@ function renderRules(){
       '</div><div class="dz" data-dz="new">Drop a field here to start a mapping</div>';
     return;
   }
-  el.innerHTML = RULES.map((r,i)=>
-    '<div class="rule'+(r.on?'':' off')+'" data-id="'+r.id+'">'+
+  el.innerHTML = RULES.map((r,i)=>{
+    const t = TRACE.find(x=>x.id===r.id);
+    const cls = (r.on?'':' off') + (t && t.state==='pending' ? ' dim' : '')
+              + (STEP!==null && i===STEP-1 ? ' step-now' : '');
+    return '<div class="rule'+cls+'" data-id="'+r.id+'"'+
+      (r.src.kind==='field'&&r.src.path?' data-src-path="'+esc(r.src.path)+'"':'')+
+      ((r.tgt.kind==='field'||r.tgt.kind==='clear')&&r.tgt.path?' data-tgt-path="'+esc(r.tgt.path)+'"':'')+'>'+
       '<div class="rulehead">'+
         '<span class="grip" draggable="true" title="drag to reorder">\u2059</span>'+
         '<input type="checkbox" data-f="on"'+(r.on?' checked':'')+' title="enable / disable">'+
@@ -1289,7 +1459,7 @@ function renderRules(){
         '<div class="pills">'+
           r.xf.map((x,j)=>{
             const d=XF[x.fn]; if(!d) return '';
-            return '<span class="pill"><span class="pn">'+d.l+'</span>'+
+            return '<span class="pill" draggable="true" data-pill="'+j+'"><span class="pn">'+d.l+'</span>'+
               d.a.map(ag=>'<input type="text" data-xa="'+j+':'+ag.k+'" style="width:'+ag.w+'px" '+
                 'value="'+esc(x.a[ag.k]!==undefined?x.a[ag.k]:ag.d)+'" placeholder="'+esc(ag.l)+'" title="'+esc(ag.l)+'">').join('')+
               '<button data-xmove="'+j+':-1" title="move earlier">\u2191</button>'+
@@ -1307,12 +1477,17 @@ function renderRules(){
               '<input type="text" data-f="cond.val" style="flex:1" value="'+esc(r.cond.val)+'" placeholder="value">')+
             '<button class="icon" data-cond="off" title="remove condition">\u00d7</button></div>'
           : '')+
-      '</div></div>').join('') +
+        flowHTML(r)+
+      '</div></div>';
+  }).join('') +
     '<div class="dz" data-dz="new">Drop a field here to start a new mapping</div>';
 }
 
 /* ---------- source tree ---------- */
 function renderTree(){
+  /* The tree is rebuilt whenever mappings change (the badges depend on them),
+     so hold the scroll position or the list jumps under the pointer. */
+  const keepScroll = $('#tree').scrollTop;
   SEGS = parseHL7($('#msgIn').value);
   const f = FILTER.toLowerCase();
   const html = SEGS.map((seg,si)=>{
@@ -1353,14 +1528,38 @@ function renderTree(){
   }).join('');
   $('#tree').innerHTML = html ||
     '<div class="empty">'+(FILTER?'Nothing matches that filter.':'Paste an HL7 message to get started.')+'</div>';
+  $('#tree').scrollTop = keepScroll;
 }
 function node(p,label,val,isComp,f){
   const ps=pathStr(p);
   if(f && (ps+' '+(label||'')+' '+val).toLowerCase().indexOf(f)===-1) return '';
-  return '<div class="node'+(isComp?' comp':'')+'" draggable="true" data-path="'+ps+'" title="drag onto a target field, or click to map">'+
+  const u = USES[ps];
+  const badge = u
+    ? (u.src?'<span class="use" title="'+u.src+' mapping'+(u.src>1?'s':'')+' read this field">'+u.src+'</span>':'')+
+      (u.tgt?'<span class="use tgt" title="'+u.tgt+' mapping'+(u.tgt>1?'s':'')+' write this field">'+u.tgt+'</span>':'')
+    : '';
+  return '<div class="node'+(isComp?' comp':'')+'" draggable="true" data-path="'+ps+'" '+
+    'title="drag onto a target field, click to map, or double-click the value to edit">'+
     '<span class="path">'+ps+'</span>'+
     '<span class="lbl">'+esc(label||'')+'</span>'+
-    '<span class="val">'+esc(val)+'</span></div>';
+    '<span class="val">'+esc(val)+'</span>'+badge+'</div>';
+}
+/* Which paths each mapping reads and writes — drives the tree badges. */
+function countUses(){
+  USES = {};
+  const bump=(path,kind)=>{
+    if(!path) return;
+    const p=parsePath(path); if(!p) return;
+    const k=pathStr(p);
+    (USES[k] = USES[k] || {src:0,tgt:0})[kind]++;
+  };
+  RULES.forEach(r=>{
+    if(!r.on) return;
+    if(r.src.kind==='field') bump(r.src.path,'src');
+    if(r.src.kind==='template') tmplParts(r.src.text).forEach(x=>{ if(x.path) bump(pathStr(x.path),'src'); });
+    if(r.cond.on) bump(r.cond.path,'src');
+    if(r.tgt.kind==='field'||r.tgt.kind==='clear') bump(r.tgt.path,'tgt');
+  });
 }
 
 /* ---------- recipes ---------- */
@@ -1398,7 +1597,15 @@ function highlight(code){
 function renderOut(){
   $('#outJs').innerHTML  = highlight(generate());
   $('#outXml').textContent = generateXML();
-  const r = runPreview();
+
+  /* One run drives everything: the diff, the cards' live values and the
+     tree badges. STEP (from the scrubber) limits how many mappings apply. */
+  const total = RULES.length;
+  if(STEP !== null && STEP > total) STEP = null;
+  const r = runPreview(STEP===null?undefined:STEP);
+  TRACE = r.trace;
+  renderStepper(total);
+
   const before = r.before.split('\r\n'), after = r.text.split('\r\n');
   const changed = after.filter((l,i)=>before[i]!==l).length;
   let h='';
@@ -1414,7 +1621,27 @@ function renderOut(){
   }
   $('#outPrev').innerHTML=h;
 }
-function render(){ renderRules(); renderOut(); }
+function renderStepper(total){
+  const range=$('#stepRange'), lab=$('#stepLabel');
+  range.max = total;
+  range.value = STEP===null ? total : STEP;
+  range.disabled = total===0;
+  if(!total){ lab.textContent='no mappings'; return; }
+  const n = STEP===null ? total : STEP;
+  if(n===total) lab.innerHTML='all <b>'+total+'</b> applied';
+  else {
+    const r = RULES[n];
+    lab.innerHTML = '<b>'+n+'</b> of '+total+(r?' &middot; next: '+esc(ruleTitle(r)).slice(0,34):'');
+  }
+}
+/* renderOut fills TRACE and USES, which renderRules and renderTree both read,
+   so the preview has to run first. */
+function render(){
+  countUses();
+  renderOut();
+  renderRules();
+  renderTree();
+}
 
 /* ============================================================
    Events
@@ -1461,6 +1688,15 @@ document.addEventListener('dragstart', e=>{
     g.closest('.rule').classList.add('rdrag');
     return;
   }
+  const pl=t.closest('.pill');
+  if(pl){
+    const r=ruleOf(pl); if(!r) return;
+    DRAG={kind:'pill', id:r.id, idx:+pl.dataset.pill};
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain','pill');
+    pl.classList.add('rdrag');
+    return;
+  }
   const n=t.closest('.node');
   if(n){
     DRAG={kind:'node', path:n.dataset.path};
@@ -1474,10 +1710,14 @@ document.addEventListener('dragstart', e=>{
 document.addEventListener('dragover', e=>{
   if(!DRAG) return;
   const t=el(e.target); if(!t) return;
-  const hit = DRAG.kind==='node'
-    ? t.closest('.slot[data-drop], .dz, .node')
-    : t.closest('.rule');
+  const hit = DRAG.kind==='node' ? t.closest('.slot[data-drop], .dz, .node')
+            : DRAG.kind==='pill' ? t.closest('.pill')
+            : t.closest('.rule');
   if(!hit) return;
+  if(DRAG.kind==='pill'){
+    const r=ruleOf(hit);
+    if(!r || r.id!==DRAG.id || +hit.dataset.pill===DRAG.idx) return;
+  }
   if(DRAG.kind==='node' && hit.classList.contains('node') && hit.dataset.path===DRAG.path) return;
   if(DRAG.kind==='rule' && +hit.dataset.id===DRAG.id) return;
   e.preventDefault();
@@ -1496,6 +1736,13 @@ document.addEventListener('drop', e=>{
   clearDnd(); DRAG=null;
   if(!t) return;
 
+  if(d.kind==='pill'){
+    const r=byId(d.id); if(!r) return;
+    const to=+t.dataset.pill;
+    if(to===d.idx || to<0 || to>=r.xf.length) return;
+    const moved=r.xf.splice(d.idx,1)[0];
+    r.xf.splice(to,0,moved); render(); return;
+  }
   if(d.kind==='rule'){
     const from=RULES.findIndex(r=>r.id===d.id), to=RULES.findIndex(r=>r.id===+t.dataset.id);
     if(from<0||to<0||from===to) return;
@@ -1526,9 +1773,13 @@ $('#rules').addEventListener('input', e=>{
   if(f) setDeep(r, f, e.target.type==='checkbox'?e.target.checked:e.target.value);
   else if(xa){ const b=xa.split(':'); r.xf[+b[0]].a[b[1]]=e.target.value; }
   else return;
-  renderOut();
+  countUses(); renderOut();
   const card=e.target.closest('.rule');
   const ttl=card.querySelector('.ttl'); if(ttl) ttl.textContent=ruleTitle(r);
+  const flow=card.querySelector('.flow');
+  if(flow) flow.outerHTML=flowHTML(r);
+  card.dataset.srcPath = r.src.kind==='field' ? (r.src.path||'') : '';
+  card.dataset.tgtPath = (r.tgt.kind==='field'||r.tgt.kind==='clear') ? (r.tgt.path||'') : '';
   const slot=e.target.closest('.slot');
   if(slot && e.target.classList.contains('pathin')){
     const m=slot.querySelector('.meta'); if(m) m.textContent=pathHint(e.target.value);
@@ -1598,7 +1849,7 @@ $('#tree').addEventListener('click', e=>{
     n.classList.add('picked');
   }
 });
-$('#treeFind').addEventListener('input', e=>{ FILTER=e.target.value; renderTree(); });
+$('#treeFind').addEventListener('input', e=>{ FILTER=e.target.value; countUses(); renderTree(); });
 $('#showEmpty').addEventListener('change', e=>{ SHOW_EMPTY=e.target.checked; renderTree(); });
 $('#collapseAll').onclick = ()=>{
   const anyOpen = SEGS.some((s,i)=>!COLLAPSED[i]);
@@ -1610,7 +1861,7 @@ $('#editMsg').onclick = ()=>{
 };
 $('#msgIn').addEventListener('input', ()=>{
   clearTimeout(window._t);
-  window._t=setTimeout(()=>{ renderTree(); renderOut(); },350);
+  window._t=setTimeout(render,350);
 });
 
 /* ---------------- recipes ---------------- */
@@ -1632,19 +1883,6 @@ $('#rgrid').addEventListener('click', e=>{
 
 /* ---------------- header, tabs, storage ---------------- */
 $('#addRule').onclick = ()=>addRules([newRule()]);
-$('#clearBtn').onclick = ()=>{ if(RULES.length && confirm('Delete all '+RULES.length+' mappings?')){ RULES=[]; render(); } };
-$('#saveBtn').onclick = ()=>{
-  localStorage.setItem('mirthMapper', JSON.stringify({rules:RULES, msg:$('#msgIn').value}));
-  toast('Saved to this browser');
-};
-$('#loadBtn').onclick = ()=>{
-  const raw=localStorage.getItem('mirthMapper');
-  if(!raw){ toast('Nothing saved yet'); return; }
-  const d=JSON.parse(raw);
-  RULES=d.rules||[]; uid=RULES.reduce((m,r)=>Math.max(m,r.id),0)+1;
-  if(d.msg) $('#msgIn').value=d.msg;
-  renderTree(); render(); toast('Loaded '+RULES.length+' mappings');
-};
 document.querySelectorAll('.tab[data-p]').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab[data-p]').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
@@ -1652,11 +1890,235 @@ document.querySelectorAll('.tab[data-p]').forEach(t=>t.onclick=()=>{
 });
 $('#copyBtn').onclick = ()=>{
   const on=document.querySelector('.tab.on[data-p]').dataset.p;
-  const txt = on==='xml' ? generateXML() : on==='js' ? generate() : runPreview().text;
+  const txt = on==='xml' ? generateXML() : on==='js' ? generate()
+             : runPreview(STEP===null?undefined:STEP).text;
   navigator.clipboard.writeText(txt).then(()=>toast('Copied'),()=>toast('Copy blocked'));
 };
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ setArm(null); $('#overlay').classList.remove('on'); }
+  if(e.key==='Escape'){
+    setArm(null);
+    $('#overlay').classList.remove('on');
+    $('#keysOverlay').classList.remove('on');
+    $('#menuPop').classList.remove('on');
+  }
+});
+
+/* ---------------- undo / redo ----------------
+   Rather than sprinkling snapshot() calls through every handler, this watches
+   for state changes around each interaction: arm before the event runs, then
+   compare afterwards and keep the previous state only if something actually
+   moved. Typing is coalesced into one entry per burst. */
+const HIST = {past:[], future:[], pre:null, timer:null};
+function histSnap(){ return JSON.stringify({r:RULES, m:$('#msgIn').value}); }
+function histArm(){ if(HIST.pre===null) HIST.pre=histSnap(); }
+function histCommit(){
+  if(HIST.pre===null) return;
+  const now=histSnap();
+  if(now!==HIST.pre){
+    HIST.past.push(HIST.pre);
+    if(HIST.past.length>60) HIST.past.shift();
+    HIST.future.length=0;
+  }
+  HIST.pre=null;
+  histButtons();
+}
+function histButtons(){
+  $('#undoBtn').disabled = !HIST.past.length;
+  $('#redoBtn').disabled = !HIST.future.length;
+}
+function histApply(json){
+  const d=JSON.parse(json);
+  RULES = d.r;
+  $('#msgIn').value = d.m;
+  uid = RULES.reduce((m,r)=>Math.max(m,r.id),0)+1;
+  HIST.pre = null;          // discard anything armed by the keystroke that got us here
+  setArm(null);
+  render();
+  histButtons();
+}
+function undo(){
+  if(!HIST.past.length){ toast('Nothing to undo'); return; }
+  HIST.future.push(histSnap());
+  histApply(HIST.past.pop());
+}
+function redo(){
+  if(!HIST.future.length){ toast('Nothing to redo'); return; }
+  HIST.past.push(histSnap());
+  histApply(HIST.future.pop());
+}
+['pointerdown','keydown','dragstart'].forEach(ev=>document.addEventListener(ev, histArm, true));
+['click','change','drop','dragend'].forEach(ev=>document.addEventListener(ev, ()=>setTimeout(histCommit,0), false));
+document.addEventListener('input', ()=>{
+  histArm(); clearTimeout(HIST.timer); HIST.timer=setTimeout(histCommit,600);
+}, true);
+$('#undoBtn').onclick = undo;
+$('#redoBtn').onclick = redo;
+
+/* ---------------- hover: link cards to the message ---------------- */
+function clearLinks(){
+  document.querySelectorAll('.hl-src,.hl-tgt,.rule.hl')
+    .forEach(n=>n.classList.remove('hl-src','hl-tgt','hl'));
+}
+function linkFromCard(card){
+  clearLinks();
+  const sp=card.dataset.srcPath, tp=card.dataset.tgtPath;
+  if(sp) document.querySelectorAll('.node[data-path="'+CSS.escape(sp)+'"]').forEach(n=>n.classList.add('hl-src'));
+  if(tp) document.querySelectorAll('.node[data-path="'+CSS.escape(tp)+'"]').forEach(n=>n.classList.add('hl-tgt'));
+}
+function linkFromNode(path){
+  clearLinks();
+  const q=CSS.escape(path);
+  document.querySelectorAll('.rule[data-src-path="'+q+'"], .rule[data-tgt-path="'+q+'"]')
+    .forEach(c=>c.classList.add('hl'));
+}
+$('#rules').addEventListener('mouseover', e=>{
+  const c=el(e.target) && el(e.target).closest('.rule'); if(c) linkFromCard(c);
+});
+$('#tree').addEventListener('mouseover', e=>{
+  const n=el(e.target) && el(e.target).closest('.node'); if(n) linkFromNode(n.dataset.path);
+});
+$('#rules').addEventListener('mouseleave', clearLinks);
+$('#tree').addEventListener('mouseleave', clearLinks);
+
+/* ---------------- edit a sample value in place ---------------- */
+$('#tree').addEventListener('dblclick', e=>{
+  const t=el(e.target); if(!t) return;
+  const cell=t.closest('.val'); if(!cell) return;
+  const nd=cell.closest('.node'); if(!nd) return;
+  const path=nd.dataset.path, cur=cell.textContent;
+  const inp=document.createElement('input');
+  inp.type='text'; inp.className='valedit'; inp.value=cur;
+  cell.classList.add('editing'); cell.textContent=''; cell.appendChild(inp);
+  inp.focus(); inp.select();
+  let done=false;
+  const finish=(save)=>{
+    if(done) return; done=true;
+    if(save && inp.value!==cur){
+      const segs=parseHL7($('#msgIn').value);
+      writePath(segs, parsePath(path), inp.value);
+      $('#msgIn').value = serializeHL7(segs).replace(/\r\n/g,'\n');
+      histCommit();
+      render();
+      toast(path+' = '+(inp.value||'empty'));
+    } else render();
+  };
+  inp.addEventListener('keydown', ev=>{
+    ev.stopPropagation();
+    if(ev.key==='Enter'){ ev.preventDefault(); finish(true); }
+    else if(ev.key==='Escape'){ ev.preventDefault(); finish(false); }
+  });
+  inp.addEventListener('blur', ()=>finish(true));
+});
+
+/* ---------------- preview step scrubber ---------------- */
+function stepTo(n){
+  const total=RULES.length;
+  if(!total) return;
+  n = Math.max(0, Math.min(total, n));
+  STEP = n>=total ? null : n;
+  render();
+}
+$('#stepRange').addEventListener('input', e=>stepTo(+e.target.value));
+$('#stepPrev').onclick = ()=>stepTo((STEP===null?RULES.length:STEP)-1);
+$('#stepNext').onclick = ()=>stepTo((STEP===null?RULES.length:STEP)+1);
+
+/* ---------------- overflow menu, import / export ---------------- */
+$('#menuBtn').onclick = e=>{ e.stopPropagation(); $('#menuPop').classList.toggle('on'); };
+document.addEventListener('click', e=>{
+  if(!el(e.target) || !el(e.target).closest('.menuwrap')) $('#menuPop').classList.remove('on');
+});
+$('#menuPop').addEventListener('click', e=>{
+  const b=el(e.target) && el(e.target).closest('[data-m]'); if(!b) return;
+  $('#menuPop').classList.remove('on');
+  const m=b.dataset.m;
+  if(m==='save'){
+    localStorage.setItem('mirthMapper', JSON.stringify({rules:RULES, msg:$('#msgIn').value}));
+    toast('Saved to this browser');
+  }
+  else if(m==='load'){
+    const raw=localStorage.getItem('mirthMapper');
+    if(!raw){ toast('Nothing saved yet'); return; }
+    const d=JSON.parse(raw);
+    RULES=d.rules||[]; uid=RULES.reduce((mx,r)=>Math.max(mx,r.id),0)+1;
+    if(d.msg) $('#msgIn').value=d.msg;
+    render(); toast('Loaded '+RULES.length+' mappings');
+  }
+  else if(m==='export'){
+    if(!RULES.length){ toast('No mappings to export'); return; }
+    const blob=new Blob([JSON.stringify({version:1, message:$('#msgIn').value, rules:RULES}, null, 2)],
+                        {type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='mirth-mappings.json';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+    toast('Exported '+RULES.length+' mappings');
+  }
+  else if(m==='import') $('#importFile').click();
+  else if(m==='keys')   $('#keysOverlay').classList.add('on');
+  else if(m==='clear'){
+    if(RULES.length && confirm('Delete all '+RULES.length+' mappings?')){ RULES=[]; render(); }
+  }
+});
+$('#importFile').addEventListener('change', e=>{
+  const f=e.target.files && e.target.files[0]; if(!f) return;
+  const fr=new FileReader();
+  fr.onload = () => {
+    try{
+      const d=JSON.parse(fr.result);
+      const list = Array.isArray(d) ? d : d.rules;
+      if(!Array.isArray(list)) throw new Error('no rules array in that file');
+      /* Re-key the ids so imported mappings cannot collide with existing ones. */
+      const clean = list.map(r=>({
+        id: uid++,
+        on: r.on!==false,
+        src: Object.assign({kind:'field', path:'', text:''}, r.src),
+        xf:  Array.isArray(r.xf) ? r.xf.filter(x=>XF[x.fn]).map(x=>({fn:x.fn, a:Object.assign({}, x.a)})) : [],
+        tgt: Object.assign({kind:'field', path:'', name:''}, r.tgt),
+        cond:Object.assign({on:false, path:'', op:'eq', val:''}, r.cond)
+      }));
+      if(d.message && confirm('Replace the sample message with the one in this file?'))
+        $('#msgIn').value = d.message;
+      RULES = RULES.concat(clean);
+      render();
+      toast('Imported '+clean.length+' mapping'+(clean.length===1?'':'s'));
+    }catch(err){ toast('Could not read that file'); }
+    e.target.value='';
+  };
+  fr.readAsText(f);
+});
+$('#closeKeys').onclick = ()=>$('#keysOverlay').classList.remove('on');
+$('#keysOverlay').addEventListener('click', e=>{
+  if(e.target===$('#keysOverlay')) $('#keysOverlay').classList.remove('on');
+});
+
+/* ---------------- keyboard ---------------- */
+function typing(e){
+  const t=e.target;
+  return t && (t.tagName==='INPUT' || t.tagName==='TEXTAREA' || t.tagName==='SELECT' || t.isContentEditable);
+}
+document.addEventListener('keydown', e=>{
+  const mod = e.metaKey || e.ctrlKey;
+  if(mod && e.key.toLowerCase()==='z'){
+    e.preventDefault();
+    e.shiftKey ? redo() : undo();
+    return;
+  }
+  if(typing(e)) return;
+  if(e.key==='/'){ e.preventDefault(); $('#treeFind').focus(); $('#treeFind').select(); }
+  else if(e.key==='n'){ e.preventDefault(); addRules([newRule()]); }
+  else if(e.key==='r'){ e.preventDefault(); openRecipes(); }
+  else if(e.key==='?'){ e.preventDefault(); $('#keysOverlay').classList.add('on'); }
+  else if(e.key==='1'||e.key==='2'||e.key==='3'){
+    const tab=document.querySelectorAll('.tab[data-p]')[+e.key-1];
+    if(tab) tab.click();
+  }
+  else if(e.key==='ArrowLeft' && $('#pane-prev').classList.contains('on')){
+    e.preventDefault(); stepTo((STEP===null?RULES.length:STEP)-1);
+  }
+  else if(e.key==='ArrowRight' && $('#pane-prev').classList.contains('on')){
+    e.preventDefault(); stepTo((STEP===null?RULES.length:STEP)+1);
+  }
 });
 
 /* ---------------- init ---------------- */
@@ -1664,9 +2126,10 @@ const sel=$('#sampleSel');
 Object.keys(SAMPLES).forEach(k=>{
   const o=document.createElement('option'); o.value=k; o.textContent=k; sel.appendChild(o);
 });
-sel.onchange = ()=>{ $('#msgIn').value=SAMPLES[sel.value]; COLLAPSED={}; renderTree(); renderOut(); };
+sel.onchange = ()=>{ $('#msgIn').value=SAMPLES[sel.value]; COLLAPSED={}; STEP=null; render(); };
 $('#msgIn').value = SAMPLES[Object.keys(SAMPLES)[0]];
-renderTree(); render();
+render();
+histButtons();
 </script>
 </body>
 </html>
