@@ -152,6 +152,16 @@ Mirth's HL7 XML representation splits down to components, not subcomponents — 
 ADT^A01 (admit) · ADT^A08 (update) · ORM^O01 (order) · ORU^R01 (result) · SIU^S12 (scheduling).
 Or paste your own — click **✎ Edit** to open the raw message box.
 
+## Theme
+
+Tokyo Night in both modes — Tokyo Night proper for dark, Tokyo Night Day for light, toggled from the
+topbar and remembered in `localStorage`. The colours live in one token block at the top of the file;
+the layout CSS only ever refers to token names, so retheming means editing that block and nothing
+else. Every foreground clears WCAG AA (4.5:1) against all four surfaces in both modes — `--surface2`
+is the tightest, so check there first.
+
+Note this page no longer tracks the main site's boba palette, so a site retheme will not reach it.
+
 ## Notes and limits
 
 - Assigning to a field absent from the inbound message **appends it at the end of the segment**;

@@ -6,9 +6,9 @@
 <title>Mirth Transformer Builder — HL7 v2.5.1 interface JavaScript</title>
 <meta name="description" content="Map HL7 v2.5.1 fields by dragging one onto another and get a working Mirth Connect transformer back: the JavaScript, a pasteable channel XML block, and a live preview of the transformed message. Runs entirely in your browser.">
 <link rel="canonical" href="https://coffeemilktea.github.io/HL7-Interface-Javascript-Builder/">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23161110%22/%3E%20%3Crect%20x%3D%221.5%22%20y%3D%221.5%22%20width%3D%2261%22%20height%3D%2261%22%20rx%3D%2212.5%22%20fill%3D%22none%22%20stroke%3D%22%23443831%22%20stroke-width%3D%223%22/%3E%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23c9a0ea%22%20stroke-width%3D%224.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%20%3Cpath%20d%3D%22M17%2021h30l-3.3%2031.5a4%204%200%200%201-4%203.5H24.3a4%204%200%200%201-4-3.5z%22/%3E%20%3Cpath%20d%3D%22M13%2021h38%22/%3E%20%3Cpath%20d%3D%22M36%2021V9l7.5-3%22/%3E%20%3C/g%3E%20%3Cg%20fill%3D%22%23f0cf8a%22%3E%20%3Ccircle%20cx%3D%2227%22%20cy%3D%2244%22%20r%3D%223.2%22/%3E%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2244%22%20r%3D%223.2%22/%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%2250.5%22%20r%3D%223.2%22/%3E%20%3C/g%3E%20%3C/svg%3E">
-<meta name="theme-color" content="#1e1815" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#f3e7d6" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%2316161e%22/%3E%20%3Crect%20x%3D%221.5%22%20y%3D%221.5%22%20width%3D%2261%22%20height%3D%2261%22%20rx%3D%2212.5%22%20fill%3D%22none%22%20stroke%3D%22%233b4261%22%20stroke-width%3D%223%22/%3E%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23bb9af7%22%20stroke-width%3D%224.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%20%3Cpath%20d%3D%22M17%2021h30l-3.3%2031.5a4%204%200%200%201-4%203.5H24.3a4%204%200%200%201-4-3.5z%22/%3E%20%3Cpath%20d%3D%22M13%2021h38%22/%3E%20%3Cpath%20d%3D%22M36%2021V9l7.5-3%22/%3E%20%3C/g%3E%20%3Cg%20fill%3D%22%23e0af68%22%3E%20%3Ccircle%20cx%3D%2227%22%20cy%3D%2244%22%20r%3D%223.2%22/%3E%20%3Ccircle%20cx%3D%2237%22%20cy%3D%2244%22%20r%3D%223.2%22/%3E%20%3Ccircle%20cx%3D%2232%22%20cy%3D%2250.5%22%20r%3D%223.2%22/%3E%20%3C/g%3E%20%3C/svg%3E">
+<meta name="theme-color" content="#1a1b26" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#e1e2e7" media="(prefers-color-scheme: light)">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://coffeemilktea.github.io/HL7-Interface-Javascript-Builder/">
 <meta property="og:site_name" content="Healthcare Data Tools">
@@ -29,37 +29,38 @@
    drift off the palette. Change a value here and the site follows.
 
    Contrast: every foreground clears WCAG AA (4.5:1) against all four
-   surfaces -- --bg, --surface, --surface2 and --sink -- and both glass
-   fills, in both modes. --surface2 is the tightest of them, so check
-   there first: a colour can pass on the page background and still fail
-   on a chip or a table head.
+   surfaces -- --bg, --surface, --surface2 and --sink -- in both modes.
+   --surface2 is the tightest of them, so check there first: a colour can
+   pass on the page background and still fail on a chip or a pane head.
+   Tokyo Night's own comment grey (#565f89) sits at ~3.5:1 on --surface2,
+   so --muted is lifted a few steps rather than taken literally.
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
   /* ── Surfaces ── */
-  --bg:          #1e1815;  /* steeped pearl   */
-  --surface:     #161110;  /* dark cup        */
-  --surface2:    #2e2521;  /* wet tapioca     */
-  --sink:        #120e0d;  /* below the cup — insets, code wells */
-  --border:      #443831;  /* cane sugar      */
-  --border-soft: #2b231f;  /* cane sugar, half strength */
+  --bg:          #1a1b26;  /* editor          */
+  --surface:     #16161e;  /* sidebar         */
+  --surface2:    #292e42;  /* highlight — chips, pane heads */
+  --sink:        #13141c;  /* insets, code wells */
+  --border:      #3b4261;  /* gutter          */
+  --border-soft: #262a3d;  /* gutter, half strength */
 
-  /* ── Accents (the flavour wall) ──
-     Taro leads: a milk-tea tan accent collides with the warm tints the
-     cards already use, and taro sits ~200° away. If you retheme, keep the
-     tint hues at least ~12° apart or two tool cards read as identical. */
-  --accent:   #c9a0ea;  /* taro            */
-  --accent2:  #f2a0bd;  /* strawberry milk */
-  --cyan:     #8ed4c4;  /* jasmine green   */
-  --green:    #a9c96a;  /* matcha          */
-  --yellow:   #f0cf8a;  /* brown sugar     */
-  --red:      #f0736f;  /* lychee          */
-  --orange:   #eb8a3c;  /* thai tea        */
+  /* ── Accents ──
+     Purple leads and blue answers it, Tokyo Night's signature pair. They
+     take the roles the old taro/strawberry pair held, so primary buttons,
+     arrows and tints all land where they did. */
+  --accent:   #bb9af7;  /* purple */
+  --accent2:  #7aa2f7;  /* blue   */
+  --cyan:     #7dcfff;  /* cyan   */
+  --green:    #9ece6a;  /* green  */
+  --yellow:   #e0af68;  /* yellow */
+  --red:      #f7768e;  /* red    */
+  --orange:   #ff9e64;  /* orange */
 
   /* ── Type ── */
-  --text:  #f7efe4;  /* milk foam    — headings, primary  */
-  --body:  #e2d6c6;  /* oat milk     — running text       */
-  --muted: #a99584;  /* kraft sleeve — labels, secondary  */
+  --text:  #c0caf5;  /* fg      — headings, primary */
+  --body:  #a9b1d6;  /* fg dark — running text      */
+  --muted: #8b95c2;  /* comment, lifted for AA      */
 
   /* ── Shape and motion ── */
   --radius:    16px;
@@ -69,13 +70,13 @@
   --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --shadow:    0 20px 45px rgba(0, 0, 0, .45);
 
-  /* ── Glass (re-derived over the boba base) ── */
-  --glass:        rgba(46, 37, 33, 0.50);
-  --glass-strong: rgba(22, 17, 16, 0.66);
-  --glass-border: rgba(247, 239, 228, 0.12);
-  --glass-hi:     rgba(255, 250, 244, 0.14);
+  /* ── Glass (re-derived over the Tokyo Night base) ── */
+  --glass:        rgba(41, 46, 66, 0.50);
+  --glass-strong: rgba(22, 22, 30, 0.66);
+  --glass-border: rgba(192, 202, 245, 0.12);
+  --glass-hi:     rgba(192, 202, 245, 0.14);
   --glass-blur:   18px;
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, .30), inset 0 1px 0 rgba(255,250,244,.05);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, .34), inset 0 1px 0 rgba(192,202,245,.05);
 
   /* ── Tinted washes. Derived, so they follow the theme on their own. ── */
   --accent-bg:   color-mix(in srgb, var(--accent) 12%, transparent);
@@ -90,7 +91,7 @@
   --red-line:    color-mix(in srgb, var(--red)    38%, transparent);
 
   /* Text laid on a solid accent fill (buttons, chips, ::selection). */
-  --on-accent: #1e1815;
+  --on-accent: #1a1b26;
 
   /* Three tapioca pearls, used as a mask so they inherit currentColor.
      A cluster rather than a lone circle — one dot just reads as a bullet. */
@@ -101,35 +102,35 @@
 }
 
 [data-theme="light"] {
-  --bg:          #f3e7d6;  /* milk tea  */
-  --surface:     #fdf8f0;  /* milk foam */
-  --surface2:    #e5d5bf;  /* oat milk  */
-  --sink:        #eadcc7;
-  --border:      #b8a184;  /* kraft */
-  --border-soft: #d8c6ab;
+  --bg:          #e1e2e7;  /* day editor  */
+  --surface:     #f2f3f7;  /* raised      */
+  --surface2:    #cdd0db;  /* chips, pane heads — the tight one */
+  --sink:        #d7d9e2;
+  --border:      #a5abc4;
+  --border-soft: #c6c9d8;
 
-  /* Tuned against --surface2, the darkest light surface — chips, table heads
-     and pane heads all sit on it, and the earlier values (checked only against
-     --bg and --surface) landed at 4.1–4.4:1 there. Same hues, a shade deeper. */
-  --accent:   #67399c;  /* deep taro   */
-  --accent2:  #a23261;  /* strawberry  */
-  --cyan:     #2b665e;  /* jasmine     */
-  --green:    #49651a;  /* matcha      */
-  --yellow:   #77570e;  /* brown sugar */
-  --red:      #a8322e;  /* lychee      */
-  --orange:   #924812;  /* thai tea    */
+  /* Tokyo Night Day's accents are tuned for text on its own light ground;
+     these are the same hues taken a shade deeper so they also clear AA on
+     --surface2, the darkest light surface. */
+  --accent:   #5a3ba3;  /* purple */
+  --accent2:  #24589e;  /* blue   */
+  --cyan:     #0f5b74;  /* cyan   */
+  --green:    #3d6413;  /* green  */
+  --yellow:   #76510f;  /* yellow */
+  --red:      #a4123f;  /* red    */
+  --orange:   #86480c;  /* orange */
 
-  --text:  #2b211a;
-  --body:  #493c2f;
-  --muted: #5f5244;
+  --text:  #343b58;
+  --body:  #414868;
+  --muted: #53586e;
 
-  --shadow: 0 20px 45px rgba(62, 44, 30, .14);
+  --shadow: 0 20px 45px rgba(52, 59, 88, .16);
 
-  --glass:        rgba(255, 250, 244, 0.55);
-  --glass-strong: rgba(255, 250, 244, 0.72);
-  --glass-border: rgba(255, 250, 244, 0.7);
-  --glass-hi:     rgba(255, 253, 250, 0.9);
-  --glass-shadow: 0 8px 32px rgba(62, 44, 30, .12), inset 0 1px 0 rgba(255,250,244,.6);
+  --glass:        rgba(242, 243, 247, 0.55);
+  --glass-strong: rgba(242, 243, 247, 0.72);
+  --glass-border: rgba(242, 243, 247, 0.7);
+  --glass-hi:     rgba(250, 251, 253, 0.9);
+  --glass-shadow: 0 8px 32px rgba(52, 59, 88, .12), inset 0 1px 0 rgba(250,251,253,.6);
 
   /* The washes read thin on a light ground, so they carry a little more. */
   --accent-bg:   color-mix(in srgb, var(--accent) 10%, transparent);
@@ -143,7 +144,7 @@
   --red-bg:      color-mix(in srgb, var(--red)    10%, transparent);
   --red-line:    color-mix(in srgb, var(--red)    34%, transparent);
 
-  --on-accent: #fdf8f0;
+  --on-accent: #f2f3f7;
 }
 
 /* ═══ Shared chrome ════════════════════════════════════════════════════
@@ -474,8 +475,8 @@ body.dnd .dz.over{border-color:var(--green);color:var(--green);background:color-
 .node .use{flex:0 0 auto;min-width:15px;height:15px;line-height:15px;text-align:center;
   border-radius:8px;font-size:9.5px;background:var(--accent);color:var(--sink);font-weight:700}
 .node .use.tgt{background:var(--orange)}
-.node.hl-src{background:rgba(142,212,196,.16);border-left-color:var(--cyan)}
-.node.hl-tgt{background:rgba(235,138,60,.16);border-left-color:var(--orange)}
+.node.hl-src{background:color-mix(in srgb, var(--cyan) 18%, transparent);border-left-color:var(--cyan)}
+.node.hl-tgt{background:color-mix(in srgb, var(--orange) 18%, transparent);border-left-color:var(--orange)}
 .node .val.editing{flex:1}
 .node input.valedit{width:100%;padding:0 5px;font:inherit;background:var(--surface2);
   border:1px solid var(--accent);border-radius:4px;color:var(--text)}
