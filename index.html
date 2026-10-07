@@ -450,6 +450,7 @@ body.dnd .dz.over{border-color:var(--green);color:var(--green);background:color-
 .cond input[type=text]{min-width:70px}
 .empty{color:var(--muted);text-align:center;padding:34px 22px;font-size:12px;line-height:2}
 .empty b{color:var(--text)}
+.empty span{margin:0 .05em}
 
 /* ---------- live value flow inside a mapping card ---------- */
 .flow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px;
@@ -740,14 +741,14 @@ const SAMPLES = {
 'EVN|A01|20260905101500|||OPUSER^Ops^User',
 'PID|1||MRN123456^^^HOSP_A^MR~987654321^^^USA^SS||DOE^JANE^Q^^MS||19850214|F||2106-3|123 MAIN ST^APT 4^BOSTON^MA^02101^USA^H||(617)555-0142^PRN^PH^jane.doe@mail.com|(617)555-9900^WPN||S||ACCT0099887|123-45-6789',
 'NK1|1|DOE^JOHN^^^MR|SPO^Spouse^HL70063|123 MAIN ST^^BOSTON^MA^02101|(617)555-0143',
-'PV1|1|I|3W^3W12^01^HOSP_A^^N^BLDG1^3||||1234^SMITH^ROBERT^A^^DR|5678^JONES^AMY^^^DR|||||||||INP|VN00223344|SELF|||||||||||||||||||HOSP_A|||||20260905101500',
+'PV1|1|I|3W^3W12^01^HOSP_A^^N^BLDG1^3||||1234^SMITH^ROBERT^A^^DR|5678^JONES^AMY^^^DR||||||||||INP|VN00223344|SELF|||||||||||||||||||HOSP_A|||||20260905101500',
 'DG1|1|I10|I50.9^Heart failure, unspecified^I10|Heart failure|20260905|A'
 ].join('\n'),
 'ORM^O01 — Order': [
 'MSH|^~\\&|RIS|RAD_DEPT|PACS|MAIN_HOSP|20260905093000||ORM^O01^ORM_O01|ORD55501|P|2.5.1',
 'PID|1||MRN777888^^^MAIN^MR||SMITH^JOHN^A||19701122|M|||45 OAK AVE^^CAMBRIDGE^MA^02139^USA',
 'PV1|1|O|RAD^^^MAIN||||9911^WELBY^MARCUS^^^DR',
-'ORC|NW|PLC10023^RIS|FIL20045^PACS|GRP001||||| 20260905093000|ENT01^Entry^Clerk||9911^WELBY^MARCUS^^^DR',
+'ORC|NW|PLC10023^RIS|FIL20045^PACS|GRP001|||||20260905093000|ENT01^Entry^Clerk||9911^WELBY^MARCUS^^^DR',
 'OBR|1|PLC10023^RIS|FIL20045^PACS|71260^CT CHEST W CONTRAST^C4|R|20260905093000|20260905100000||||||Rule out PE||CHEST|9911^WELBY^MARCUS^^^DR||||||||CT'
 ].join('\n'),
 'ORU^R01 — Result': [
@@ -1159,7 +1160,7 @@ Object.assign(SAMPLES, {
 'MSH|^~\\&|REG|SITE_A|MIRTH|SITE_B|20260905143000||ADT^A08^ADT_A01|MSG00042|P|2.5.1',
 'EVN|A08|20260905143000',
 'PID|1||0012345^^^SITE_A^MR||o\'brien^patrick^j||19601005|m|||77 BEACON ST^^BOSTON^MA^02108^USA^H||617-555-0188^PRN^PH||EN|M||ACCT7781|001-22-3333',
-'PV1|1|O|CLINIC^^^SITE_A||||2211^PATEL^NEHA^^^DR||||||||||||OUT|VN99881',
+'PV1|1|O|CLINIC^^^SITE_A||||2211^PATEL^NEHA^^^DR|||||||||||OUT|VN99881',
 'IN1|1|PLAN01^BLUE PPO|INS001|BLUE CROSS^^^^^^XX|1 INS WAY^^BOSTON^MA^02110||800-555-0100|GRP7788'
 ].join('\n'),
 'SIU^S12 — Schedule': [
@@ -1433,8 +1434,8 @@ function renderRules(){
   $('#ruleCount').textContent = RULES.length ? act+' of '+RULES.length+' active' : '';
   if(!RULES.length){
     el.innerHTML='<div class="empty"><b>No mappings yet.</b><br>'+
-      '<span style="color:var(--cyan)">Drag</span> a field from the message onto another field to map it.<br>'+
-      'Or <span style="color:var(--cyan)">click</span> a source field, then click the target.<br>'+
+      '<span style="color:var(--cyan)">Drag</span>&nbsp;a field from the message onto another field to map it.<br>'+
+      'Or&nbsp;<span style="color:var(--cyan)">click</span>&nbsp;a source field, then a target field.<br>'+
       'Or open <span style="color:var(--accent)">&#9733; Recipes</span> for ready-made transformers.'+
       '</div><div class="dz" data-dz="new">Drop a field here to start a mapping</div>';
     return;
